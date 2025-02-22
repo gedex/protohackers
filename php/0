@@ -1,0 +1,59 @@
+#!/usr/bin/env php
+<?php
+
+function usage() {
+	printf("usage: %s <host:port>", $argv[0]);
+	exit(1);
+}
+
+function err(string $msg) {
+	printf("error: %s\n", $msg);
+	exit(1);
+}
+
+function handle_conn($conn, ?string $peer_name) {
+	printf("%s> connection accepted\n", $peer_name);
+	while (!feof($conn)) {
+		fwrite($conn, fread($conn, 8192));
+	}
+
+	printf("%s> connection closed\n", $peer_name);
+	fclose($conn);
+}
+
+function fork_fn(callable $fn, ...$fn_args) {
+	$pid = pcntl_fork();
+	if ($pid === -1) {
+		err("failed to fork");
+	}
+	if ($pid === 0) {
+		call_user_func($fn, ...$fn_args);
+		exit();
+	}
+}
+
+function main() {
+	global $argv;
+
+	if (count($argv) < 2) {
+		usage();
+	}
+
+	$socket = stream_socket_server(sprintf("tcp://%s", $argv[1]), $error_code, $error_message);
+	if (!$socket) {
+		err(sprintf("%s - %s", $error_code, $error_message));
+	}
+	printf("listening on %s\n", $argv[1]);
+
+	while ($conn = stream_socket_accept($socket, null, $peer_name)) {
+		if ($conn === false) {
+			err("failed to accept connection");
+		}
+
+		fork_fn('handle_conn', $conn, $peer_name);
+	}
+
+	while (pcntl_waitpid(0, $status) != 1);
+	fclose($socket);
+}
+main();

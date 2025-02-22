@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+const process = require('process');
+const usage = (err) => {
+	if (err) {
+		console.log(`error: ${err}`);
+	}
+	console.log(`usage: ${process.argv[1]} <host:port>`);
+	process.exit(1);
+}
+
+if (process.argv.length < 3) {
+	usage();
+}
+
+const [host, port] = process.argv[2].split(":");
+if (!host || !port) {
+	usage();
+}
+
+const net = require('net');
+const onConnect = (conn) => {
+	conn.pipe(conn);
+}
+
+const server = net.createServer(onConnect);
+server.listen(port, host, () => {
+	console.log(`listening on ${host}:${port}`);
+});
