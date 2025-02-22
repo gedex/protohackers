@@ -16,6 +16,7 @@ var testDataFiles = []string{
 	"./testdata/hello",
 	"./testdata/hello_world",
 	"./testdata/foobar",
+	"./testdata/empty",
 	"./testdata/MIT-LICENSE",
 	"./testdata/bin",
 }
