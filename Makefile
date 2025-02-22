@@ -14,7 +14,7 @@ zig_bins: $(ZIG_BINS)
 test: bins
 	cd ./tester/$(PROBLEM) && SERVER_BIN='../../$(SERVER)/$(PROBLEM)' SERVER_ARGS='127.0.0.1:9999' go test -v
 
-run: clean bins
+run: bins
 	./$(SERVER)/$(PROBLEM) $(SERVER_ARGS)
 
 $(GO_BINS): %: %.go
