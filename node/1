@@ -1,0 +1,83 @@
+#!/usr/bin/env node
+const process = require('process');
+const usage = (err) => {
+	if (err) {
+		console.log(`error: ${err}`);
+	}
+	console.log(`usage: ${process.argv[1]} <host:port>`);
+	process.exit(1);
+}
+
+if (process.argv.length < 3) {
+	usage();
+}
+
+const [host, port] = process.argv[2].split(':');
+if (!host || !port) {
+	usage();
+}
+
+const net = require('net');
+const onConnect = (conn) => {
+	const addr = `${conn.remoteAddress}:${conn.remotePort}`;
+	console.log(`${addr}> connection accepted`);
+
+	conn.on('end', () => console.log(`${addr}> connection closed`));
+
+	conn.on('data', (data) => {
+		const requests = data.toString('utf8')
+			.split("\n")
+			.filter((req) => req.length > 0);
+
+		for (const req of requests) {
+			try {
+				console.log(`${addr}> --> ${req}`);
+				resp = JSON.stringify(response(req));
+				conn.write(resp+"\n");
+				console.log(`${addr}> <-- ${resp}`)
+			} catch (e) {
+				conn.write("\n");
+				break;
+			}
+		}
+
+		conn.end();
+	});
+};
+
+const response = (reqString) => {
+	const req = JSON.parse(reqString);
+	if (req.method !== 'isPrime') throw new Error('invalid method');
+	if (typeof(req.number) !== 'number') throw new Error('invalid number')
+
+	const number = Number(req.number);
+	if (isNaN(number)) throw new Error('invalid number');
+
+	return {
+		method: 'isPrime',
+		prime: isPrime(number),
+	};
+};
+
+const isPrime = (n) => {
+	if (n <= 1) {
+		return false;
+	}
+	if (!Number.isInteger(n)) {
+		return false;
+	}
+
+	let i = 2;
+	for (; (i * i) <= n; i += 1 ) {
+		if (n%i === 0) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+const server = net.createServer(onConnect);
+server.listen(port, host, () => {
+	console.log(`listening on ${host}:${port}`);
+})
