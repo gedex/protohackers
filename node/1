@@ -41,7 +41,7 @@ const onConnect = (conn) => {
 			console.log(`${addr}> <-- ${resp}`);
 		} catch (e) {
 			conn.write("\n");
-			conn.end();
+			conn.destroy();
 		}
 	});
 };
