@@ -18,30 +18,31 @@ if (!host || !port) {
 }
 
 const net = require('net');
+const readline = require('readline');
 const onConnect = (conn) => {
 	const addr = `${conn.remoteAddress}:${conn.remotePort}`;
 	console.log(`${addr}> connection accepted`);
 
 	conn.on('end', () => console.log(`${addr}> connection closed`));
+	conn.on('error', (err) => {
+		console.log(`${addr}> error: ${err}`);
+		console.log(`${addr}> connection closed`);
+	});
 
-	conn.on('data', (data) => {
-		const requests = data.toString('utf8')
-			.split("\n")
-			.filter((req) => req.length > 0);
+	const rl = readline.createInterface({
+		input: conn,
+	});
 
-		for (const req of requests) {
-			try {
-				console.log(`${addr}> --> ${req}`);
-				resp = JSON.stringify(response(req));
-				conn.write(resp+"\n");
-				console.log(`${addr}> <-- ${resp}`)
-			} catch (e) {
-				conn.write("\n");
-				break;
-			}
+	rl.on('line', (line) => {
+		try {
+			console.log(`${addr}> --> ${line}`);
+			resp = JSON.stringify(response(line));
+			conn.write(resp+"\n");
+			console.log(`${addr}> <-- ${resp}`);
+		} catch (e) {
+			conn.write("\n");
+			conn.end();
 		}
-
-		conn.end();
 	});
 };
 
