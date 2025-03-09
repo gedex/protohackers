@@ -2,6 +2,8 @@
 <?php
 
 function usage() {
+	global $argv;
+
 	printf("usage: %s <host:port>", $argv[0]);
 	exit(1);
 }
