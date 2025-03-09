@@ -1,0 +1,6 @@
+{"number":759268,"method":"isPrime"}
+{"method":"isPrime","number":997541}
+{"method":"isPrime","number":309223}
+{"method":"isPrime","number":16175}
+{"number":393705,"method":"isPrime"}
+GET /prime/5493366 HTTP/1.1
